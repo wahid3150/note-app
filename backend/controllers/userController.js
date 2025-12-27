@@ -2,6 +2,7 @@ import { User } from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt, { decode } from "jsonwebtoken";
 import { verifyEmail } from "../verifyEmail/verifyEmail.js";
+import { Session } from "../models/sessionModel.js";
 
 export const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
@@ -89,6 +90,76 @@ export const verification = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Email verified successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    if (!email || !password) {
+      return res.status(400).send({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).send({
+        success: false,
+        message: "Unauthorized access",
+      });
+    }
+    const passwordCheck = await bcrypt.compare(password, user.password);
+    if (!passwordCheck) {
+      return res.status(402).json({
+        success: false,
+        message: "Incorrect Password",
+      });
+    }
+
+    // Check if user is verified if verified then allow to login if not then verification is must
+    if (user.isVerified !== true) {
+      return res.status(403).json({
+        success: false,
+        message: "Account verification are required to login",
+      });
+    }
+
+    // Check for existing session and deleted it
+    const existingSession = await Session.findOne({ userId: user._id });
+    if (!existingSession) {
+      await Session.deleteOne({ userId: user._id });
+    }
+
+    //create a new session
+    await Session.create({ userId: user._id });
+
+    // Generate Tokens
+    const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    user.isLoggedIn = true;
+    await user.save();
+    return res.status(200).json({
+      success: true,
+      message: `Welcome back ${user.username}`,
+      accessToken,
+      refreshToken,
+      user,
     });
   } catch (error) {
     return res.status(500).json({
