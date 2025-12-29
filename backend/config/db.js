@@ -9,7 +9,7 @@ if (!uri) {
 const connectDB = async () => {
   try {
     const options = {
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 30000,
     };
     await mongoose.connect(uri, options);
     console.log("Database connected successfully");
