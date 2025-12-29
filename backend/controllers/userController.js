@@ -257,12 +257,7 @@ export const verifyOTP = async (req, res) => {
         message: "OTP has expired. Please request a new one",
       });
     }
-    if (otp !== user.otp) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid OTP",
-      });
-    }
+
     user.otp = null;
     user.otpExpiry = null;
     await user.save();
