@@ -5,6 +5,7 @@ import {
   loginUser,
   logout,
   registerUser,
+  resendVerification,
   verification,
   verifyOTP,
 } from "../controllers/userController.js";
@@ -16,11 +17,17 @@ import { verifyOtpSchema } from "../validators/auth/verifyOtpSchema.js";
 import { changePasswordSchema } from "../validators/auth/changePasswordSchema.js";
 import { emailParamsSchema } from "../validators/common/paramSchema.js";
 import { validateBody, validateParams } from "../middleware/validate.js";
+import { resendVerificationSchema } from "../validators/auth/resendVerificationSchema.js";
 
 const router = express.Router();
 
 router.post("/register", validateBody(registerSchema), registerUser);
 router.post("/verify", verification); // This route don't need any validation because joi only check 3 things req.body req.params req.query & thats all are not in this controller
+router.post(
+  "/resend-verification",
+  validateBody(resendVerificationSchema),
+  resendVerification
+);
 router.post("/login", validateBody(loginSchema), loginUser);
 router.post("/logout", isAuthenticated, logout);
 router.post(
