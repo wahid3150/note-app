@@ -51,6 +51,14 @@ const Signin = () => {
       );
 
       toast.success(res.data.message);
+      // Save auth tokens and user in localStorage
+      localStorage.setItem("accessToken", res.data.accessToken);
+      localStorage.setItem("refreshToken", res.data.refreshToken);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      // Set default authorization header for future requests
+      axios.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${res.data.accessToken}`;
       navigate("/");
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
