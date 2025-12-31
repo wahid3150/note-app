@@ -9,15 +9,9 @@ export const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
 
   try {
-    if (!username || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
-    }
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
         message: "User already exists",
       });
@@ -33,19 +27,20 @@ export const registerUser = async (req, res) => {
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: "10m",
     });
-    verifyEmail(token, email);
+
+    await verifyEmail(token, email);
     newUser.token = token;
     await newUser.save();
+
     return res.status(201).json({
       success: true,
-      message: "User register successfully",
-      data: newUser,
+      message: "User registered successfully. Please verify your email.",
     });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({
       success: false,
-      message: "Internal server error, please try later",
-      message: error.message,
+      message: "Internal server error",
     });
   }
 };
