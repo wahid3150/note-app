@@ -53,27 +53,23 @@ export const registerUser = async (req, res) => {
 export const verification = async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer")) {
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
-        message: "Authorization token is missing or invalid",
+        message: "Authorization token missing or invalid",
       });
     }
 
     const token = authHeader.split(" ")[1];
+
     let decoded;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
-      if (error.name === "TokenExpiredError") {
-        return res.status(400).json({
-          success: false,
-          message: "The registration token has expired",
-        });
-      }
-      return res.status(400).json({
+      return res.status(401).json({
         success: false,
-        message: "Token verification failed",
+        message: "Verification token expired or invalid",
       });
     }
 
@@ -84,8 +80,16 @@ export const verification = async (req, res) => {
         message: "User not found",
       });
     }
-    user.token = null;
+
+    if (user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already verified",
+      });
+    }
+
     user.isVerified = true;
+    user.token = null;
     await user.save();
 
     return res.status(200).json({
@@ -95,7 +99,7 @@ export const verification = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Internal server error",
     });
   }
 };
