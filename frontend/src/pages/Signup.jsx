@@ -36,9 +36,10 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+
     try {
       setIsLoading(true);
+
       const res = await axios.post(
         "http://localhost:8080/auth/register",
         formData,
@@ -48,12 +49,11 @@ const Signup = () => {
           },
         }
       );
-      if (res.data.success) {
-        navigate("/login");
-        toast.success(res.data.message);
-      }
+
+      toast.success(res.data.message);
+      navigate("/verify");
     } catch (error) {
-      console.log(error);
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +89,7 @@ const Signup = () => {
                         name="username"
                         value={formData.username}
                         onChange={handleChange}
-                        type="email"
+                        type="text"
                         placeholder="Enter your full name"
                         required
                       />
@@ -99,9 +99,9 @@ const Signup = () => {
                       <Input
                         id="email"
                         name="email"
-                        value={setFormData.email}
+                        value={formData.email}
                         onChange={handleChange}
-                        type="email"
+                        type="text"
                         placeholder="m@example.com"
                         required
                       />
