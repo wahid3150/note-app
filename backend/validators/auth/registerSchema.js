@@ -13,7 +13,6 @@ export const registerSchema = Joi.object({
     "string.empty": "Username is required",
     "string.min": "User name must be at least 3 character long",
     "string.max": "Username must not exceed 30 characters",
-    "string.alphanum": "Username can only contain letters and numbers",
     "any.required": "Username is required",
   }),
 
