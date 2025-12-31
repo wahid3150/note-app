@@ -24,13 +24,13 @@ export const registerUser = async (req, res) => {
       password: hashedPassword,
     });
 
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_EMAIL_SECRET, {
       expiresIn: "10m",
     });
 
-    await verifyEmail(token, email);
     newUser.token = token;
     await newUser.save();
+    await verifyEmail(token, email);
 
     return res.status(201).json({
       success: true,
@@ -60,7 +60,7 @@ export const verification = async (req, res) => {
 
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
+      decoded = jwt.verify(token, process.env.JWT_EMAIL_SECRET);
     } catch (error) {
       return res.status(401).json({
         success: false,
@@ -73,6 +73,13 @@ export const verification = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    if (user.token !== token) {
+      return res.status(401).json({
+        success: false,
+        message: "Verification token is invalid or already used",
       });
     }
 
