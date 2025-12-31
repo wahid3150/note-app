@@ -3,7 +3,7 @@ import "dotenv/config";
 import { verifyEmailTemplate } from "./verifyEmailTemplate.js";
 
 export const verifyEmail = async (token, email) => {
-  const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
+  const verifyUrl = `${process.env.CLIENT_URL}/verify/${token}`;
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
