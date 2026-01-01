@@ -132,7 +132,7 @@ export const resendVerification = async (req, res) => {
     }
 
     // Generate new verification token (same logic as register)
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_EMAIL_SECRET, {
       expiresIn: "10m",
     });
 
