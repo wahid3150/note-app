@@ -149,7 +149,6 @@ export const resendVerification = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "internal server error",
-      error: error.message,
     });
   }
 };
@@ -167,16 +166,17 @@ export const loginUser = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).send({
+      return res.status(401).json({
         success: false,
-        message: "Unauthorized access",
+        message: "Invalid email or password",
       });
     }
+
     const passwordCheck = await bcrypt.compare(password, user.password);
     if (!passwordCheck) {
       return res.status(401).json({
         success: false,
-        message: "Incorrect Password",
+        message: "Invalid email or password",
       });
     }
 
@@ -235,13 +235,13 @@ export const loginUser = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    const userId = req.user._id;
     if (!req.user) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized",
       });
     }
+    const userId = req.user._id;
 
     await Session.deleteMany({ userId });
 
@@ -254,7 +254,6 @@ export const logout = async (req, res) => {
   } catch (error) {
     return res.status(500).send({
       success: false,
-      message: error.message,
     });
   }
 };
@@ -272,7 +271,7 @@ export const forgotPassword = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(200).json({
-        success: false,
+        success: true,
         message: "If this email exists, an OTP has been sent",
       });
     }
@@ -313,7 +312,7 @@ export const verifyOTP = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user || !user.otp || !user.otpExpiry) {
-      return res.status(404).json({
+      return res.status(400).json({
         success: false,
         message: "Invalid or expired OTP ",
       });
@@ -378,6 +377,13 @@ export const changePassword = async (req, res) => {
       });
     }
 
+    if (user.otp || user.otpExpiry) {
+      return res.status(403).json({
+        success: false,
+        message: "OTP verification required",
+      });
+    }
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
@@ -390,7 +396,6 @@ export const changePassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal server error, Please change Password later",
-      error: error.message,
     });
   }
 };
