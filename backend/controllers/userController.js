@@ -256,25 +256,28 @@ export const forgotPassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "If this email exists, an OTP has been sent",
       });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiry = new Date(Date.now() + 10 * 60 * 1000);
+    const hashedOtp = await bcrypt.hash(otp, 10);
 
-    user.otp = otp;
-    user.otpExpiry = expiry;
+    user.otp = hashedOtp;
+    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
+
     await sendOtpMail(email, otp);
+
     return res.status(200).json({
       success: true,
-      message: "OTP Sent successful",
+      message: "If this email exists, an OTP has been sent",
     });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Internal server error",
     });
   }
 };
@@ -292,23 +295,25 @@ export const verifyOTP = async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user || !user.otp || !user.otpExpiry) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "Invalid or expired OTP ",
       });
     }
 
-    if (!user.otp || !user.otpExpiry) {
-      return res.status(400).json({
-        success: false,
-        message: "OTP not generated or already verified",
-      });
-    }
     if (user.otpExpiry < new Date()) {
       return res.status(400).json({
         success: false,
-        message: "OTP has expired. Please request a new one",
+        message: "OTP has expired",
+      });
+    }
+
+    const isOtpValid = await bcrypt.compare(otp, user.otp);
+    if (!isOtpValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
       });
     }
 
@@ -321,10 +326,10 @@ export const verifyOTP = async (req, res) => {
       message: "OTP verified successfully",
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: error.message,
     });
   }
 };
