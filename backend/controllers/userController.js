@@ -174,7 +174,7 @@ export const loginUser = async (req, res) => {
     }
     const passwordCheck = await bcrypt.compare(password, user.password);
     if (!passwordCheck) {
-      return res.status(402).json({
+      return res.status(401).json({
         success: false,
         message: "Incorrect Password",
       });
@@ -201,23 +201,34 @@ export const loginUser = async (req, res) => {
     const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
-    const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "30d",
-    });
+    const refreshToken = jwt.sign(
+      { id: user._id },
+      process.env.JWT_REFRESH_SECRET,
+      {
+        expiresIn: "30d",
+      }
+    );
 
     user.isLoggedIn = true;
     await user.save();
+
+    const safeUser = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    };
+
     return res.status(200).json({
       success: true,
       message: `Welcome back ${user.username}`,
       accessToken,
       refreshToken,
-      user,
+      user: safeUser,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Internal server error",
     });
   }
 };
