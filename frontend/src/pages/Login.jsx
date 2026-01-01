@@ -61,27 +61,34 @@ const Signin = () => {
       ] = `Bearer ${res.data.accessToken}`;
       navigate("/");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Something went wrong");
+      const data = error.response?.data;
+      const message =
+        data?.message ||
+        (Array.isArray(data?.errors) ? data.errors.join(", ") : data?.error) ||
+        error.message ||
+        "Something went wrong";
+      console.error("Login error:", error);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="relative w-full h-screen md:h-190 bg-green-100 overflow-hidden">
+    <div className="relative w-full min-h-screen bg-green-100 overflow-hidden">
       <div className="min-h-screen flex flex-col to-muted/20">
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="w-full max-w-md space-y-6">
             <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight text-green-600">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-green-600">
                 Login into your account
               </h1>
               <p className="text-gray-600">
                 Start organizing your thoughts and ideas today
               </p>
-              <Card className="w-full max-w-sm">
+              <Card className="w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto">
                 <CardHeader className="space-y-1">
-                  <CardTitle className="text-2xl text-center text-green-600">
+                  <CardTitle className="text-2xl md:text-3xl text-center text-green-600">
                     Login
                   </CardTitle>
                   <CardDescription className="text-center">
@@ -153,6 +160,15 @@ const Signin = () => {
                       "Login"
                     )}
                   </Button>
+                  <div className="text-sm text-center">
+                    <span>Don't have an account? </span>
+                    <Link
+                      to="/signup"
+                      className="text-green-600 font-medium hover:underline"
+                    >
+                      Create account
+                    </Link>
+                  </div>
                 </CardFooter>
               </Card>
             </div>

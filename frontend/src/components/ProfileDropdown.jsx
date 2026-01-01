@@ -47,7 +47,7 @@ const ProfileDropdown = () => {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-md py-1 z-50">
+        <div className="absolute right-2 left-2 sm:right-0 mt-2 w-auto sm:w-48 bg-white shadow-md rounded-md py-1 z-50">
           <button
             onClick={() => {
               setOpen(false);

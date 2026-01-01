@@ -5,6 +5,10 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import VerifyEmail from "./pages/VerifyEmail";
 import Verify from "./pages/Verify";
+import ResendVerification from "./pages/ResendVerification";
+import ForgotPassword from "./pages/ForgotPassword";
+import VerifyOtp from "./pages/VerifyOtp";
+import ChangePassword from "./pages/ChangePassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const router = createBrowserRouter([
@@ -27,6 +31,22 @@ const router = createBrowserRouter([
   {
     path: "/verify/:token",
     element: <Verify />,
+  },
+  {
+    path: "/resend-verification",
+    element: <ResendVerification />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/verify-otp/:email",
+    element: <VerifyOtp />,
+  },
+  {
+    path: "/change-password/:email",
+    element: <ChangePassword />,
   },
   {
     path: "/login",
