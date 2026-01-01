@@ -236,6 +236,12 @@ export const loginUser = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     const userId = req.user._id;
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
     await Session.deleteMany({ userId });
 
